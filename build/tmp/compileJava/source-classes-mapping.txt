@@ -1,0 +1,2 @@
+org/imd/jpa/sample1/JpaSample1Application.java
+ org.imd.jpa.sample1.JpaSample1Application

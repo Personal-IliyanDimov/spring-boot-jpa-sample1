@@ -9,7 +9,7 @@ import org.imd.jpa.sample1.model.domain.Post;
 import org.imd.jpa.sample1.model.dto.PostDto;
 import org.imd.jpa.sample1.model.dto.group.CreateGroup;
 import org.imd.jpa.sample1.model.dto.group.UpdateGroup;
-import org.imd.jpa.sample1.model.mapper.PostMapper;
+import org.imd.jpa.sample1.model.mapper.dto.PostMapper;
 import org.imd.jpa.sample1.service.PostService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/posts")
@@ -43,8 +44,12 @@ public class PostController {
 
     @GetMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PostDto> getPost(@PathVariable(name = "id") final Long id) throws PostNotFoundException {
-        final Post post = postService.findPost(id);
-        return ResponseEntity.ok(postMapper.toPostDto(post));
+        final Optional<Post> postOptional = postService.findPost(id);
+        if (! postOptional.isPresent()) {
+            throw new PostNotFoundException(id);
+        }
+
+        return ResponseEntity.ok(postMapper.toPostDto(postOptional.get()));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

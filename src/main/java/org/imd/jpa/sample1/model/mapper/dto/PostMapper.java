@@ -1,4 +1,4 @@
-package org.imd.jpa.sample1.model.mapper;
+package org.imd.jpa.sample1.model.mapper.dto;
 
 import org.imd.jpa.sample1.model.domain.Post;
 import org.imd.jpa.sample1.model.dto.PostDto;
@@ -12,6 +12,5 @@ public interface PostMapper {
     Post toPost(PostDto postDto);
 
     List<PostDto> toPostDtos(List<Post> users);
-
 
 }

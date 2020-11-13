@@ -10,7 +10,7 @@ import org.imd.jpa.sample1.model.domain.PostComment;
 import org.imd.jpa.sample1.model.dto.PostCommentDto;
 import org.imd.jpa.sample1.model.dto.group.CreateGroup;
 import org.imd.jpa.sample1.model.dto.group.UpdateGroup;
-import org.imd.jpa.sample1.model.mapper.PostCommentMapper;
+import org.imd.jpa.sample1.model.mapper.dto.PostCommentMapper;
 import org.imd.jpa.sample1.service.PostCommentService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

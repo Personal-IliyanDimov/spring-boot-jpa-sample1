@@ -2,9 +2,11 @@ package org.imd.jpa.sample1.model.entity;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -13,7 +15,9 @@ import java.util.Collections;
 import java.util.List;
 
 @Entity(name = "Post")
-@Table(name = "post")
+@Table(name = "post", indexes = {
+        @Index(unique = true, columnList = "title")
+})
 public class PostEntity {
 
     @Id
@@ -26,7 +30,8 @@ public class PostEntity {
     @OneToMany(
             mappedBy = "post",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
     private List<PostCommentEntity> comments = new ArrayList<>();
 

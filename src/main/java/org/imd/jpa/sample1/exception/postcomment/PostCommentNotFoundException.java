@@ -8,6 +8,7 @@ import lombok.ToString;
 @ToString
 @RequiredArgsConstructor
 public class PostCommentNotFoundException extends Exception {
-    private final Long id;
+    private final Long pid;
+    private final Long cid;
 
 }

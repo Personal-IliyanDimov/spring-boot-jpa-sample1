@@ -12,6 +12,7 @@ import org.imd.jpa.sample1.model.dto.group.CreateGroup;
 import org.imd.jpa.sample1.model.dto.group.UpdateGroup;
 import org.imd.jpa.sample1.model.mapper.dto.PostCommentMapper;
 import org.imd.jpa.sample1.service.PostCommentService;
+import org.imd.jpa.sample1.service.PostService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/posts/{pid}/comments")
@@ -34,34 +36,52 @@ import java.util.List;
 public class PostCommentController {
 
     private final PostCommentMapper pcMapper;
+    private final PostService pService;
     private final PostCommentService pcService;
 
-    @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<List<PostCommentDto>> getPostComments(@PathVariable(name = "pid") final Long pid) {
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<PostCommentDto>> getPostComments(@PathVariable(name = "pid") final Long pid) throws PostNotFoundException {
+        checkPostExists(pid);
+
         final List<PostComment> posts = pcService.findAll(pid);
         return ResponseEntity.ok(pcMapper.toPostCommentDtos(posts));
     }
 
-    @GetMapping(value = "/{cid}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{cid}", produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PostCommentDto> getPostComment(@PathVariable(name = "pid") final Long pid,
                                                   @PathVariable(name = "cid") final Long cid) throws PostNotFoundException, PostCommentNotFoundException {
-        final PostComment postComment = pcService.findPostComment(pid, cid);
-        return ResponseEntity.ok(pcMapper.toPostCommentDto(postComment));
+        checkPostExists(pid);
+        checkPostCommentExists(pid, cid);
+
+        final Optional<PostComment> pcOptional = pcService.findPostComment(pid, cid);
+        if (pcOptional.isEmpty()) {
+            throw new PostCommentNotFoundException(pid, cid);
+        }
+
+        return ResponseEntity.ok(pcMapper.toPostCommentDto(pcOptional.get()));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PostCommentDto> createPostComment(@PathVariable(name = "pid") final Long pid,
-                                                     @RequestBody @Validated(CreateGroup.class) @Valid PostCommentDto pcDto) throws PostCommentAlreadyExistsException {
+                                                     @RequestBody @Validated(CreateGroup.class) @Valid PostCommentDto pcDto)
+            throws PostNotFoundException, PostCommentAlreadyExistsException {
+
+        checkPostExists(pid);
+
         final PostComment pc = pcMapper.toPostComment(pcDto);
         final PostComment createdPc = pcService.createPostComment(pid, pc);
         return ResponseEntity.ok(pcMapper.toPostCommentDto(createdPc));
     }
 
     @PutMapping(value = "/{cid}")
-    ResponseEntity<PostCommentDto> updatePost(@PathVariable(name = "pid") final Long pid,
-                                              @PathVariable(name = "cid") final Long cid,
-                                              @RequestBody @Validated(UpdateGroup.class) @Valid PostCommentDto pcDto)
+    ResponseEntity<PostCommentDto> updatePostComment(@PathVariable(name = "pid") final Long pid,
+                                                     @PathVariable(name = "cid") final Long cid,
+                                                     @RequestBody @Validated(UpdateGroup.class) @Valid PostCommentDto pcDto)
             throws PostNotFoundException, PostNotUpdatedException, PostCommentNotFoundException, PostCommentNotUpdatedException {
+
+        checkPostExists(pid);
+        checkPostCommentExists(pid, cid);
+
         final PostComment pc = pcMapper.toPostComment(pcDto);
         final PostComment createdPc = pcService.updatePostComment(pid, cid, pc);
         return ResponseEntity.ok(pcMapper.toPostCommentDto(createdPc));
@@ -70,7 +90,22 @@ public class PostCommentController {
     @DeleteMapping(value = "/{cid}")
     ResponseEntity<?> deletePost(@PathVariable(name = "pid") final Long pid,
                                  @PathVariable(name = "cid") final Long cid) throws PostNotFoundException, PostCommentNotFoundException {
+        checkPostExists(pid);
+        checkPostCommentExists(pid, cid);
+
         pcService.deletePostById(pid, cid);
         return ResponseEntity.ok().build();
+    }
+
+    private void checkPostExists(Long pid) throws PostNotFoundException {
+        if (! pService.postExists(pid)) {
+            throw new PostNotFoundException(pid);
+        }
+    }
+
+    private void checkPostCommentExists(Long pid, Long cid) throws PostCommentNotFoundException {
+        if (! pcService.postCommentExists(pid, cid)) {
+            throw new PostCommentNotFoundException(pid, cid);
+        }
     }
 }

@@ -79,4 +79,9 @@ public class PostService {
 
         postRepository.deleteById(id);
     }
+
+    @Transactional
+    public boolean postExists(Long id) {
+        return postRepository.existsById(id);
+    }
 }

@@ -44,6 +44,8 @@ public class PostController {
 
     @GetMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PostDto> getPost(@PathVariable(name = "id") final Long id) throws PostNotFoundException {
+        checkPostExists(id);
+
         final Optional<Post> postOptional = postService.findPost(id);
         if (! postOptional.isPresent()) {
             throw new PostNotFoundException(id);
@@ -62,14 +64,24 @@ public class PostController {
     @PutMapping(value = "/{id}")
     ResponseEntity<PostDto> updatePost(@PathVariable(name = "id") @NotNull Long id,
                                        @RequestBody @Validated(UpdateGroup.class) @Valid PostDto postDto) throws PostNotFoundException, PostNotUpdatedException {
+        checkPostExists(id);
+
         final Post post = postMapper.toPost(postDto);
-        final Post createdpost = postService.updatePost(id, post);
-        return ResponseEntity.ok(postMapper.toPostDto(createdpost));
+        final Post updatedPost = postService.updatePost(id, post);
+        return ResponseEntity.ok(postMapper.toPostDto(updatedPost));
     }
 
     @DeleteMapping(value = "/{id}")
     ResponseEntity<?> deletePost(@PathVariable(name = "id") Long id) throws PostNotFoundException {
+        checkPostExists(id);
+
         postService.deletePostById(id);
         return ResponseEntity.ok().build();
+    }
+
+    private void checkPostExists(Long pid) throws PostNotFoundException {
+        if (! postService.postExists(pid)) {
+            throw new PostNotFoundException(pid);
+        }
     }
 }

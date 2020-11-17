@@ -7,6 +7,7 @@ import org.imd.jpa.sample1.exception.post.PostNotUpdatedException;
 import org.imd.jpa.sample1.model.domain.Post;
 import org.imd.jpa.sample1.model.entity.PostEntity;
 import org.imd.jpa.sample1.model.mapper.domain.PostDomainMapper;
+import org.imd.jpa.sample1.repository.PostCommentRepository;
 import org.imd.jpa.sample1.repository.PostRepository;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class PostService {
 
     private final PostDomainMapper pdMapper;
     private final PostRepository postRepository;
+    private final PostCommentRepository postCommentRepository;
 
     @Transactional
     public List<Post> findAll() {
@@ -72,6 +74,9 @@ public class PostService {
 
     @Transactional
     public void deletePostById(Long id) throws PostNotFoundException {
+        // delete children
+        // delete parent
+
         boolean exists = postRepository.existsById(id);
         if (! exists) {
             throw new PostNotFoundException(id);
